@@ -1,4 +1,4 @@
-#Design and Implementation of an Interactive Cubic Bézier Curve
+# Design and Implementation of an Interactive Cubic Bézier Curve
 
 ## Introduction
 
