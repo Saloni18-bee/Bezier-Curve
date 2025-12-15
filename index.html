@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Cubic Bézier Curve</title>
+   <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="app">
+        <h1>Interactive Bézier Curve with Physics & Sensor Control</h1>
+        <canvas id="bezierCanvas" width="800" height="600"></canvas>
+    </div>
+
+    <script src="Vector2D.js"></script>
+    <script src="SpringControlPoint.js"></script>
+    <script src="BezierRope.js"></script>
+    <script>
+       
+        const canvas = document.getElementById('bezierCanvas');
+        const ctx = canvas.getContext('2d');
+        const WIDTH = canvas.width;
+        const HEIGHT = canvas.height;
+
+        
+        P0 = new Vector2D(WIDTH * 0.15, HEIGHT * 0.5); // Left fixed point
+        P3 = new Vector2D(WIDTH * 0.85, HEIGHT * 0.5); // Right fixed point
+
+       // Control points with spring physics
+        P1_spring = new SpringControlPoint(WIDTH * 0.35, HEIGHT * 0.35, 0.15, 0.85);
+        P2_spring = new SpringControlPoint(WIDTH * 0.65, HEIGHT * 0.35, 0.15, 0.85);
+        
+        // Input Handler(Mouse Movement)
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            P1_spring.setTarget(mouseX - 50, mouseY); 
+            P2_spring.setTarget(mouseX + 50, mouseY); 
+        });
+        
+        // control pionts
+        function drawControlPoints(ctx) {
+            [P0, P1_spring.position, P2_spring.position, P3].forEach((p, index) => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = (index === 0 || index === 3) ? '#f00' : '#fff';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                
+                //line conntecting to previous point 
+                if (index > 0) {
+                    const prevP = (index === 1) ? P0 : getP(index - 1);
+                    ctx.beginPath();
+                    ctx.moveTo(prevP.x, prevP.y);
+                    ctx.lineTo(p.x, p.y);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+            // Calculation of new positions for P1_spring and P2_spring
+            P1_spring.updatePhysics();
+            P2_spring.updatePhysics();
+
+            drawCurve(ctx);
+            drawTangents(ctx);
+            drawControlPoints(ctx);
+            requestAnimationFrame(animate); 
+        }
+        requestAnimationFrame(animate); 
+    </script>
+  
+
+</body>
+</html>
